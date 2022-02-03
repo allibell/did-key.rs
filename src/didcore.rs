@@ -23,6 +23,16 @@ pub const CONFIG_LD_PRIVATE: Config = Config {
     serialize_secrets: true,
 };
 
+#[derive(Debug, Deserialize)]
+pub enum Error {
+    SignatureError,
+    ResolutionFailed,
+    InvalidKey,
+    DecodeError,
+    Unknown(String),
+}
+
+
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Document {
@@ -40,6 +50,31 @@ pub struct Document {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub key_agreement: Option<Vec<String>>,
     pub verification_method: Vec<VerificationMethod>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum JsonPatchOperation {
+    Add,
+    Remove,
+    Replace,
+    Move,
+    Copy,
+    Test
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JsonPatchDocument {
+    #[serde(rename = "op")]
+    pub operation: String,
+    pub path: String,
+    #[serde(rename = "value")]
+    pub json: serde_json::Value,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JsonPatchDocuments {
+    #[serde(rename = "ietf-json-patch")]
+    patches: Vec<JsonPatchDocument>,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq, Default)]
@@ -72,6 +107,21 @@ pub struct JWK {
     pub y: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub d: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JWSHeader {
+    #[serde(rename = "alg")]
+    pub algorithm: String,
+    #[serde(rename = "kid", default, skip_serializing_if = "Option::is_none")]
+    pub key_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JWS {
+    pub header: JWSHeader,
+    pub payload: Vec<u8>,
+    pub signature: Vec<u8>,
 }
 
 impl Serialize for VerificationMethod {
